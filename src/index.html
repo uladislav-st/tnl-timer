@@ -58,6 +58,13 @@
           </article>
         </section>
 
+        <section class="world-strip" aria-label="Состояние мира Amazon EU">
+          <div class="world-chip" id="dayNightStatus"><span class="world-icon">◐</span><div><small>Цикл мира</small><strong>Загрузка…</strong></div></div>
+          <div class="world-chip" id="laslanRainStatus"><span class="world-icon">☂</span><div><small>Дождь · Laslan/Stonegard</small><strong>Загрузка…</strong></div></div>
+          <div class="world-chip" id="talandreRainStatus"><span class="world-icon">☂</span><div><small>Дождь · Talandre</small><strong>Загрузка…</strong></div></div>
+          <div class="world-chip source-chip"><span class="world-icon">◎</span><div><small>Расписание</small><strong>Amazon / Steam · EU</strong><em id="scheduleFreshness"></em></div></div>
+        </section>
+
         <div class="content-grid">
           <section class="panel activities-panel">
             <div class="panel-heading">
@@ -149,6 +156,7 @@
       </form>
     </dialog>
 
+    <script src="amazon-schedule.js"></script>
     <script src="app.js"></script>
   </body>
 </html>

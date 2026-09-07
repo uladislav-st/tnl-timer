@@ -57,7 +57,17 @@ function formatDuration(ms) {
 }
 
 function formatTime(timestamp) {
-  return new Intl.DateTimeFormat('ru-RU', { hour: '2-digit', minute: '2-digit' }).format(new Date(timestamp));
+  return new Intl.DateTimeFormat('ru-RU', {
+    timeZone: 'Europe/Moscow', hour: '2-digit', minute: '2-digit'
+  }).format(new Date(timestamp));
+}
+
+function formatShortDuration(ms) {
+  if (!Number.isFinite(ms) || ms <= 0) return 'сейчас';
+  const totalMinutes = Math.ceil(ms / 60000);
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  return hours ? `${hours}ч ${minutes}м` : `${minutes}м`;
 }
 
 function dayLabel(rule) {
@@ -116,30 +126,50 @@ function renderActivities() {
 
 function renderEvents() {
   const now = new Date();
-  const upcoming = state.events
+  const manualUpcoming = state.events
     .map((event) => ({ ...event, next: getNextOccurrence(event, now) }))
     .filter((event) => event.next)
-    .sort((a, b) => a.next - b.next);
+    .map((event) => ({ ...event, timestamp: event.next.getTime(), source: 'manual' }));
+  const amazonUpcoming = window.amazonSchedule
+    ? window.amazonSchedule.getUpcomingEvents(now, 20).map((event) => ({ ...event, timestamp: event.time }))
+    : [];
+  const upcoming = [...manualUpcoming, ...amazonUpcoming]
+    .sort((a, b) => a.timestamp - b.timestamp)
+    .slice(0, 14);
 
-  $('#eventEmpty').hidden = state.events.length > 0;
-  eventList.hidden = state.events.length === 0;
+  $('#eventEmpty').hidden = upcoming.length > 0;
+  eventList.hidden = upcoming.length === 0;
 
   eventList.innerHTML = upcoming.map((event) => {
-    const diff = event.next - now;
+    const eventDate = new Date(event.timestamp);
+    const diff = event.timestamp - now.getTime();
     const hours = Math.floor(diff / 3600000);
     const minutes = Math.floor((diff % 3600000) / 60000);
-    const when = event.next.toDateString() === now.toDateString() ? 'сегодня' : 'след. день';
+    const when = eventDate.toDateString() === now.toDateString() ? 'сегодня' : eventDate.toLocaleDateString('ru-RU', { weekday: 'short' });
+    const displayTime = event.source === 'amazon' ? formatTime(event.timestamp) : event.time;
+    const sourceLabel = event.source === 'amazon' ? '<span class="auto-badge">AUTO</span>' : '';
+    const editButton = event.source === 'manual' ? '<button class="menu-button" data-action="edit-event">•••</button>' : '';
     return `
       <div class="event-row" data-id="${event.id}">
-        <div class="event-time">${event.time}</div>
-        <div><div class="event-name">${escapeHtml(event.name)}</div><div class="event-meta">${typeLabels[event.type] || 'Событие'} · ${dayLabel(event.days)}</div></div>
-        <div><div class="event-countdown">${when}<br>через ${hours}ч ${minutes}м</div><button class="menu-button" data-action="edit-event">•••</button></div>
+        <div class="event-time">${displayTime}</div>
+        <div><div class="event-name">${escapeHtml(event.name)} ${sourceLabel}</div><div class="event-meta">${typeLabels[event.type] || 'Событие'}${event.source === 'manual' ? ` · ${dayLabel(event.days)}` : ' · Amazon EU'}</div></div>
+        <div><div class="event-countdown">${when}<br>через ${hours}ч ${minutes}м</div>${editButton}</div>
       </div>`;
   }).join('');
 
   $('#nextEventSummary').textContent = upcoming[0]
-    ? `${upcoming[0].time} · ${upcoming[0].name}`
+    ? `${upcoming[0].source === 'amazon' ? formatTime(upcoming[0].timestamp) : upcoming[0].time} · ${upcoming[0].name}`
     : 'Не задано';
+}
+
+function renderWorldStatus() {
+  if (!window.amazonSchedule) return;
+  const status = window.amazonSchedule.getWorldStatus();
+  const setStatus = (selector, value) => { $(selector).querySelector('strong').textContent = value; };
+  setStatus('#dayNightStatus', `${status.dayNight.isDay ? 'День' : 'Ночь'} · смена через ${formatShortDuration(status.dayNight.remaining)}`);
+  setStatus('#laslanRainStatus', status.laslan.raining ? `Идёт дождь · ещё ${formatShortDuration(status.laslan.remaining)}` : `Через ${formatShortDuration(status.laslan.remaining)}`);
+  setStatus('#talandreRainStatus', status.talandre.raining ? `Идёт дождь · ещё ${formatShortDuration(status.talandre.remaining)}` : `Через ${formatShortDuration(status.talandre.remaining)}`);
+  $('#scheduleFreshness').textContent = `проверено ${window.amazonSchedule.meta.verifiedAt.split('-').reverse().join('.')}`;
 }
 
 function renderHistory() {
@@ -156,6 +186,7 @@ function renderAll() {
   renderActivities();
   renderEvents();
   renderHistory();
+  renderWorldStatus();
 }
 
 async function notify(title, body) {
@@ -190,6 +221,20 @@ function checkNotifications() {
       state.notified[key] = true;
       notify('Событие через 10 минут', `${event.name} начнётся в ${event.time}.`);
       saveState();
+    }
+  }
+
+  if (window.amazonSchedule) {
+    const nextAutomatic = window.amazonSchedule.getUpcomingEvents(new Date(), 8)
+      .filter((event) => event.type === 'boss' || event.type === 'archboss');
+    for (const event of nextAutomatic) {
+      const remaining = event.time - now;
+      const key = `auto-event:${event.id}`;
+      if (remaining <= 10 * 60000 && remaining > 0 && !state.notified[key]) {
+        state.notified[key] = true;
+        notify('Событие Amazon EU через 10 минут', event.name);
+        saveState();
+      }
     }
   }
 }
@@ -338,5 +383,5 @@ if (window.nixDesktop) {
 renderAll();
 updateClock();
 checkNotifications();
-setInterval(() => { updateClock(); renderActivities(); checkNotifications(); }, 1000);
+setInterval(() => { updateClock(); renderActivities(); renderWorldStatus(); checkNotifications(); }, 1000);
 setInterval(renderEvents, 30000);
