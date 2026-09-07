@@ -81,7 +81,12 @@ button { color: inherit; }
 }
 .icon-button:hover, .icon-button[aria-pressed="true"] { color: var(--text); border-color: var(--border-strong); background: rgba(102, 229, 255, .07); }
 .toggle-icon { color: var(--cyan); font-size: 18px; }
-.toggle-label { font-size: 12px; }
+.toggle-label, .update-label { font-size: 12px; }
+.update-button[data-state="downloaded"] { color: var(--text); border-color: rgba(104,243,189,.45); background: rgba(104,243,189,.10); }
+.update-button[data-state="downloaded"] .toggle-icon { color: var(--green); }
+.update-button[data-state="downloading"] .toggle-icon,
+.update-button[data-state="checking"] .toggle-icon { animation: update-spin 1s linear infinite; }
+@keyframes update-spin { to { transform: rotate(360deg); } }
 
 main { padding-top: 38px; }
 .hero { display: flex; align-items: flex-end; justify-content: space-between; gap: 30px; margin-bottom: 28px; }
@@ -208,7 +213,7 @@ main { padding-top: 38px; }
 @media (max-width: 650px) {
   .app-shell { padding: 0 14px 28px; }
   .topbar { min-height: 78px; }
-  .toggle-label, .clock-block { display: none; }
+  .toggle-label, .update-label, .clock-block { display: none; }
   .icon-button { padding: 0 11px; }
   .hero { align-items: stretch; flex-direction: column; margin-bottom: 20px; }
   .hero h2 { font-size: 34px; }
@@ -221,7 +226,7 @@ main { padding-top: 38px; }
 
 body.compact .app-shell { padding: 0 12px 18px; }
 body.compact .topbar { min-height: 68px; }
-body.compact .brand .eyebrow, body.compact .clock-block, body.compact .toggle-label,
+body.compact .brand .eyebrow, body.compact .clock-block, body.compact .toggle-label, body.compact .update-label,
 body.compact .hero > div, body.compact .stats-grid, body.compact .history-panel,
 body.compact .panel-heading .section-kicker, body.compact #addActivitySmall { display: none; }
 body.compact main { padding-top: 12px; }

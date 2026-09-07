@@ -23,6 +23,42 @@ const $ = (selector) => document.querySelector(selector);
 const activityList = $('#activityList');
 const eventList = $('#eventList');
 const historyList = $('#historyList');
+const updateButton = $('#updateButton');
+let latestUpdaterStatus = { state: 'idle' };
+
+function renderUpdaterStatus(status = latestUpdaterStatus) {
+  latestUpdaterStatus = status;
+  const version = status.version ? `v${status.version}` : 'Версия';
+  const labels = {
+    idle: version,
+    checking: 'Проверка…',
+    available: `Доступна v${status.newVersion}`,
+    downloading: `Загрузка ${status.percent ?? 0}%`,
+    downloaded: `Установить v${status.newVersion}`,
+    current: `${version} · актуально`,
+    portable: `${version} · Portable`,
+    development: `${version} · Dev`,
+    error: `${version} · повторить`
+  };
+  const titles = {
+    downloaded: 'Обновление загружено. Нажмите, чтобы установить и перезапустить приложение.',
+    portable: 'Portable-версия обновляется вручную через GitHub Releases.',
+    development: 'Автообновление работает только в установленной сборке.',
+    error: 'Не удалось проверить обновления. Нажмите, чтобы повторить.'
+  };
+  updateButton.dataset.state = status.state;
+  $('#updateLabel').textContent = labels[status.state] || version;
+  updateButton.title = titles[status.state] || 'Проверить обновления';
+}
+
+async function initializeUpdater() {
+  if (!window.nixDesktop) return;
+  window.nixDesktop.onUpdaterStatus(renderUpdaterStatus);
+  const info = await window.nixDesktop.getAppInfo();
+  renderUpdaterStatus(info.updaterStatus?.state
+    ? { ...info.updaterStatus, version: info.version, portable: info.portable }
+    : { state: info.packaged ? 'idle' : 'development', version: info.version, portable: info.portable });
+}
 
 function loadState() {
   try {
@@ -393,6 +429,19 @@ $('#compactButton').addEventListener('click', async () => {
   if (window.nixDesktop) await window.nixDesktop.setCompact(state.settings.compact);
 });
 
+updateButton.addEventListener('click', async () => {
+  if (!window.nixDesktop) return;
+  if (latestUpdaterStatus.state === 'downloaded') {
+    await window.nixDesktop.installUpdate();
+    return;
+  }
+  if (latestUpdaterStatus.state === 'portable') {
+    await window.nixDesktop.openReleases();
+    return;
+  }
+  await window.nixDesktop.checkForUpdates();
+});
+
 function updateClock() {
   $('#moscowClock').textContent = new Intl.DateTimeFormat('ru-RU', {
     timeZone: 'Europe/Moscow', hour: '2-digit', minute: '2-digit', second: '2-digit'
@@ -408,6 +457,7 @@ if (window.nixDesktop) {
 }
 
 renderAll();
+initializeUpdater();
 syncAmazonSchedule();
 updateClock();
 checkNotifications();
