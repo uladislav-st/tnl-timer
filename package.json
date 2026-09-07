@@ -13,8 +13,7 @@
     "start": "electron .",
     "test": "node tests/amazon-schedule.test.js",
     "pack": "electron-builder --win portable",
-    "dist": "electron-builder --win nsis portable",
-    "release": "electron-builder --win nsis portable --publish always"
+    "dist": "electron-builder --win nsis portable"
   },
   "devDependencies": {
     "electron": "^37.2.6",

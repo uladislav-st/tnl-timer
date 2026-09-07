@@ -56,7 +56,29 @@ jobs:
             git push origin "$tag"
           fi
 
-      - name: Build and publish GitHub Release
-        run: npm run release
+      - name: Build Windows release
+        run: npm run dist
+
+      - name: Publish GitHub Release
+        shell: pwsh
+        run: |
+          $version = "${{ steps.app.outputs.version }}"
+          $tag = "v$version"
+          $isDraft = gh release view $tag --json isDraft --jq .isDraft 2>$null
+
+          if ($LASTEXITCODE -ne 0) {
+            gh release create $tag --verify-tag --draft --title "Nix Tracker $version" --generate-notes
+          } elseif ($isDraft -ne "true") {
+            Write-Host "Release $tag is already published."
+            exit 0
+          }
+
+          gh release upload $tag `
+            "release/Nix-Tracker-Setup-$version-x64.exe" `
+            "release/Nix-Tracker-Setup-$version-x64.exe.blockmap" `
+            "release/Nix-Tracker-Portable-$version-x64.exe" `
+            "release/latest.yml" `
+            --clobber
+          gh release edit $tag --draft=false
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
