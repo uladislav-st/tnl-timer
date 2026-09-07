@@ -41,14 +41,20 @@ jobs:
           $version = (Get-Content package.json | ConvertFrom-Json).version
           "version=$version" >> $env:GITHUB_OUTPUT
 
-      - name: Ensure this version is not already published
-        shell: pwsh
+      - name: Create release tag
+        shell: bash
         run: |
-          $tag = "v${{ steps.app.outputs.version }}"
+          tag="v${{ steps.app.outputs.version }}"
           git fetch --tags --force
-          if (git tag --list $tag) {
-            Write-Error "Release $tag already exists. Increase package.json version before pushing to main."
-          }
+          if git rev-parse "$tag" >/dev/null 2>&1; then
+            if [ "$(git rev-list -n 1 "$tag")" != "$GITHUB_SHA" ]; then
+              echo "Release $tag belongs to another commit. Increase package.json version before pushing to main."
+              exit 1
+            fi
+          else
+            git tag "$tag"
+            git push origin "$tag"
+          fi
 
       - name: Build and publish GitHub Release
         run: npm run release
