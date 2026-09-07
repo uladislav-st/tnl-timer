@@ -53,7 +53,7 @@
             <strong id="readyCount">0</strong>
           </article>
           <article class="stat-card accent-card">
-            <span>Ближайшее событие</span>
+            <span>Ближайший босс</span>
             <strong id="nextEventSummary">Не задано</strong>
           </article>
         </section>
@@ -87,12 +87,12 @@
               <div class="panel-heading">
                 <div>
                   <span class="section-kicker">РАСПИСАНИЕ</span>
-                  <h3>Боссы и события</h3>
+                  <h3>Боссы</h3>
                 </div>
-                <button class="ghost-button" id="addEventButton">＋ Событие</button>
+                <button class="ghost-button" id="addEventButton">＋ Босс</button>
               </div>
               <div id="eventList" class="event-list"></div>
-              <div id="eventEmpty" class="small-empty">Расписание пусто. Добавь время из игрового Timetable.</div>
+              <div id="eventEmpty" class="small-empty">Боссы не найдены. Добавь время из игрового Timetable.</div>
             </section>
 
             <section class="panel history-panel">
@@ -136,14 +136,14 @@
     <dialog id="eventDialog" class="modal">
       <form method="dialog" id="eventForm">
         <div class="modal-head">
-          <div><span class="section-kicker">КАЛЕНДАРЬ</span><h3 id="eventModalTitle">Новое событие</h3></div>
+          <div><span class="section-kicker">КАЛЕНДАРЬ</span><h3 id="eventModalTitle">Новый босс</h3></div>
           <button type="button" class="close-button" data-close="eventDialog">×</button>
         </div>
         <input type="hidden" id="eventId" />
         <label>Название<input id="eventName" maxlength="50" placeholder="Например, Thuban" required /></label>
         <div class="form-row">
           <label>Время<input id="eventTime" type="time" required /></label>
-          <label>Тип<select id="eventType"><option value="peace">Мирный босс</option><option value="war">PvP-событие</option><option value="archboss">Архбосс</option><option value="dynamic">Dynamic Event</option><option value="custom">Другое</option></select></label>
+          <label>Тип<select id="eventType"><option value="boss">Полевой босс</option><option value="peace">Мирный босс</option><option value="archboss">Архбосс</option></select></label>
         </div>
         <label>Дни проведения<select id="eventDays"><option value="daily">Каждый день</option><option value="weekdays">Пн–Пт</option><option value="weekends">Сб–Вс</option><option value="wed_sat">Среда и суббота</option></select></label>
         <label class="check-label"><input id="eventNotify" type="checkbox" checked /> Уведомить за 10 минут</label>

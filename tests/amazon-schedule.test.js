@@ -13,6 +13,8 @@ assert.equal(upcoming[0].name, 'Ascended Pakilo Naru / Ascended Nirma');
 assert.equal(new Date(upcoming[0].time).toISOString(), '2026-09-07T11:00:00.000Z');
 assert.ok(upcoming.some((event) => event.type === 'gigantrite'));
 assert.ok(upcoming.some((event) => event.type === 'war'));
+assert.equal(upcoming.find((event) => event.type === 'boss').category, 'boss');
+assert.equal(upcoming.find((event) => event.type === 'gigantrite').category, 'event');
 
 const world = schedule.getWorldStatus(referenceTime.getTime());
 assert.equal(typeof world.dayNight.isDay, 'boolean');

@@ -135,7 +135,7 @@
       events.push({
         id: `${source}-${timestamp}-${slot}`, name: parseItems(raw), time: timestamp,
         type: isPvp ? 'war' : (raw.includes('gigantrite') || raw.includes('whale') ? 'gigantrite' : source === 'amazon-extra' ? 'dynamic' : 'boss'),
-        source: 'amazon', estimated
+        category: source === 'amazon-boss' ? 'boss' : 'event', source: 'amazon', estimated
       });
     }
   }
@@ -178,7 +178,11 @@
         const timestamp = zonedTimeToUtc(displayDate.year, displayDate.month, displayDate.day, hour, minute);
         if (timestamp > now.getTime()) {
           const isPvp = /!gpvp|!dpvp/i.test(row.items);
-          events.push({ id: `amazon-exact-${timestamp}-${index}`, name: parseItems(row.items), time: timestamp, type: isPvp ? 'war' : 'archboss', source: 'amazon' });
+          const bossLike = /ramux|bell|tevent|cordy|delu|boss/i.test(row.items);
+          events.push({
+            id: `amazon-exact-${timestamp}-${index}`, name: parseItems(row.items), time: timestamp,
+            type: isPvp ? 'war' : 'archboss', category: bossLike ? 'boss' : 'event', source: 'amazon'
+          });
         }
       }
     }

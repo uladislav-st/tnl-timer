@@ -129,11 +129,14 @@ function renderActivities() {
 function renderEvents() {
   const now = new Date();
   const manualUpcoming = state.events
+    .filter((event) => ['boss', 'peace', 'archboss'].includes(event.type))
     .map((event) => ({ ...event, next: getNextOccurrence(event, now) }))
     .filter((event) => event.next)
     .map((event) => ({ ...event, timestamp: event.next.getTime(), source: 'manual' }));
   const amazonUpcoming = window.amazonSchedule
-    ? window.amazonSchedule.getUpcomingEvents(now, 20).map((event) => ({ ...event, timestamp: event.time }))
+    ? window.amazonSchedule.getUpcomingEvents(now, 80)
+      .filter((event) => event.category === 'boss')
+      .map((event) => ({ ...event, timestamp: event.time }))
     : [];
   const upcoming = [...manualUpcoming, ...amazonUpcoming]
     .sort((a, b) => a.timestamp - b.timestamp)
@@ -249,8 +252,8 @@ function checkNotifications() {
   }
 
   if (window.amazonSchedule) {
-    const nextAutomatic = window.amazonSchedule.getUpcomingEvents(new Date(), 8)
-      .filter((event) => event.type === 'boss' || event.type === 'archboss' || event.type === 'war');
+    const nextAutomatic = window.amazonSchedule.getUpcomingEvents(new Date(), 80)
+      .filter((event) => event.category === 'boss');
     for (const event of nextAutomatic) {
       const remaining = event.time - now;
       const key = `auto-event:${event.id}`;
@@ -287,11 +290,11 @@ function openActivityDialog(activity = null) {
 }
 
 function openEventDialog(event = null) {
-  $('#eventModalTitle').textContent = event ? 'Изменить событие' : 'Новое событие';
+  $('#eventModalTitle').textContent = event ? 'Изменить босса' : 'Новый босс';
   $('#eventId').value = event?.id || '';
   $('#eventName').value = event?.name || '';
   $('#eventTime').value = event?.time || '20:00';
-  $('#eventType').value = event?.type || 'peace';
+  $('#eventType').value = event?.type || 'boss';
   $('#eventDays').value = event?.days || 'daily';
   $('#eventNotify').checked = event?.notify ?? true;
   $('#deleteEventButton').hidden = !event;
