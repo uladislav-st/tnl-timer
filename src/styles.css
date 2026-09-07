@@ -193,12 +193,14 @@ main { padding-top: 38px; }
 body.compact .app-shell { padding: 0 12px 18px; }
 body.compact .topbar { min-height: 68px; }
 body.compact .brand .eyebrow, body.compact .clock-block, body.compact .toggle-label,
-body.compact .hero > div, body.compact .stats-grid, body.compact .side-column,
+body.compact .hero > div, body.compact .stats-grid, body.compact .history-panel,
 body.compact .panel-heading .section-kicker, body.compact #addActivitySmall { display: none; }
 body.compact main { padding-top: 12px; }
 body.compact .hero { justify-content: flex-end; margin: 0 0 8px; }
 body.compact .hero .primary-button { width: 100%; }
 body.compact .content-grid { grid-template-columns: 1fr; }
+body.compact .side-column { display: grid; gap: 8px; }
+body.compact .events-panel { display: block; }
 body.compact .activities-panel { min-height: 0; }
 body.compact .panel-heading { padding: 14px 16px; }
 body.compact .panel-heading h3 { margin: 0; font-size: 15px; }
@@ -206,3 +208,6 @@ body.compact .activity-card { grid-template-columns: 36px minmax(0,1fr); padding
 body.compact .activity-icon { width: 36px; height: 36px; }
 body.compact .activity-controls { grid-column: 2; }
 body.compact .progress-bar, body.compact .activity-card::after { left: 56px; }
+body.compact .event-list { max-height: 230px; overflow-y: auto; }
+body.compact .event-row { grid-template-columns: 50px minmax(0,1fr) auto; padding: 9px 4px; }
+body.compact .event-countdown { display: none; }

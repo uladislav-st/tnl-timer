@@ -292,7 +292,7 @@ $('#deleteEventButton').addEventListener('click', () => {
 });
 
 for (const button of ['#addActivityButton', '#addActivitySmall', '#emptyAddButton']) {
-  $(button).addEventListener('click', () => openActivityDialog());
+  $(button)?.addEventListener('click', () => openActivityDialog());
 }
 $('#addEventButton').addEventListener('click', () => openEventDialog());
 

@@ -43,7 +43,7 @@ ipcMain.handle('window:set-compact', (_event, enabled) => {
   if (!mainWindow) return;
   if (enabled) {
     mainWindow.setMinimumSize(390, 420);
-    mainWindow.setSize(420, 620, true);
+    mainWindow.setSize(440, 740, true);
   } else {
     mainWindow.setMinimumSize(760, 560);
     mainWindow.setSize(1120, 760, true);
