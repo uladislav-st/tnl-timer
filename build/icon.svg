@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="74" y1="54" x2="438" y2="458" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#17243D"/>
+      <stop offset="1" stop-color="#080C17"/>
+    </linearGradient>
+    <linearGradient id="ice" x1="140" y1="100" x2="382" y2="416" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#81F0FF"/>
+      <stop offset=".55" stop-color="#67CFFF"/>
+      <stop offset="1" stop-color="#A77CFF"/>
+    </linearGradient>
+    <filter id="glow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="9" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <rect x="24" y="24" width="464" height="464" rx="116" fill="url(#bg)"/>
+  <rect x="30" y="30" width="452" height="452" rx="110" fill="none" stroke="#8DEEFF" stroke-opacity=".28" stroke-width="6"/>
+  <path d="M256 104V408M124 180L388 332M124 332L388 180" stroke="url(#ice)" stroke-width="18" stroke-linecap="round" filter="url(#glow)"/>
+  <path d="M256 104L226 139M256 104L286 139M256 408L226 373M256 408L286 373M124 180L171 170M124 180L143 224M388 332L341 342M388 332L369 288M124 332L143 288M124 332L171 342M388 180L341 170M388 180L369 224" stroke="url(#ice)" stroke-width="15" stroke-linecap="round"/>
+  <circle cx="256" cy="256" r="76" fill="#0C1324" stroke="url(#ice)" stroke-width="7"/>
+  <path d="M218 315V196H237L290 276V196H314V315H294L242 237V315H218Z" fill="url(#ice)"/>
+</svg>

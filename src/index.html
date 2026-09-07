@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self'; script-src 'self'; img-src 'self' data:;" />
+    <title>Nix Tracker</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="aurora aurora-one"></div>
+    <div class="aurora aurora-two"></div>
+
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="brand">
+          <div class="brand-mark">N</div>
+          <div>
+            <div class="eyebrow">THRONE AND LIBERTY</div>
+            <h1>Nix Tracker</h1>
+          </div>
+        </div>
+
+        <div class="header-actions">
+          <div class="clock-block">
+            <span>Москва</span>
+            <strong id="moscowClock">--:--:--</strong>
+          </div>
+          <button class="icon-button toggle" id="alwaysOnTopButton" title="Поверх всех окон" aria-pressed="false">
+            <span class="toggle-icon">◇</span><span class="toggle-label">Поверх окон</span>
+          </button>
+          <button class="icon-button toggle" id="compactButton" title="Компактный режим" aria-pressed="false">
+            <span class="toggle-icon">▦</span><span class="toggle-label">Компактно</span>
+          </button>
+        </div>
+      </header>
+
+      <main>
+        <section class="hero">
+          <div>
+            <div class="status-line"><span class="live-dot"></span> Локальный помощник</div>
+            <h2>Все активности Nix<br /><em>в одном ритме.</em></h2>
+            <p>Отмечай прохождение — трекер сам отсчитает кулдаун и предупредит, когда можно возвращаться.</p>
+          </div>
+          <button class="primary-button" id="addActivityButton"><span>＋</span> Добавить активность</button>
+        </section>
+
+        <section class="stats-grid">
+          <article class="stat-card">
+            <span>Активных таймеров</span>
+            <strong id="activeCount">0</strong>
+          </article>
+          <article class="stat-card">
+            <span>Готово сейчас</span>
+            <strong id="readyCount">0</strong>
+          </article>
+          <article class="stat-card accent-card">
+            <span>Ближайшее событие</span>
+            <strong id="nextEventSummary">Не задано</strong>
+          </article>
+        </section>
+
+        <div class="content-grid">
+          <section class="panel activities-panel">
+            <div class="panel-heading">
+              <div>
+                <span class="section-kicker">МОИ АКТИВНОСТИ</span>
+                <h3>Кулдауны наград</h3>
+              </div>
+              <button class="ghost-button" id="addActivitySmall">＋ Новая</button>
+            </div>
+            <div id="activityList" class="activity-list"></div>
+            <div id="activityEmpty" class="empty-state">
+              <div class="empty-glyph">✦</div>
+              <h4>Добавь первую активность</h4>
+              <p>Название и длительность можно изменить в любой момент.</p>
+              <button class="secondary-button" id="emptyAddButton">Добавить</button>
+            </div>
+          </section>
+
+          <aside class="side-column">
+            <section class="panel events-panel">
+              <div class="panel-heading">
+                <div>
+                  <span class="section-kicker">РАСПИСАНИЕ</span>
+                  <h3>Боссы и события</h3>
+                </div>
+                <button class="ghost-button" id="addEventButton">＋ Событие</button>
+              </div>
+              <div id="eventList" class="event-list"></div>
+              <div id="eventEmpty" class="small-empty">Расписание пусто. Добавь время из игрового Timetable.</div>
+            </section>
+
+            <section class="panel history-panel">
+              <div class="panel-heading compact-heading">
+                <div>
+                  <span class="section-kicker">СЕГОДНЯ</span>
+                  <h3>История</h3>
+                </div>
+                <button class="text-button danger" id="clearHistoryButton">Очистить</button>
+              </div>
+              <div id="historyList" class="history-list"></div>
+              <div id="historyEmpty" class="small-empty">Здесь появятся завершённые активности.</div>
+            </section>
+          </aside>
+        </div>
+      </main>
+    </div>
+
+    <dialog id="activityDialog" class="modal">
+      <form method="dialog" id="activityForm">
+        <div class="modal-head">
+          <div><span class="section-kicker">ТАЙМЕР</span><h3 id="activityModalTitle">Новая активность</h3></div>
+          <button type="button" class="close-button" data-close="activityDialog">×</button>
+        </div>
+        <input type="hidden" id="activityId" />
+        <label>Название<input id="activityName" maxlength="50" placeholder="Например, Frozen Nightlands" required /></label>
+        <div class="form-row">
+          <label>Минуты<input id="activityMinutes" type="number" min="1" max="1440" value="30" required /></label>
+          <label>Предупредить за<input id="activityWarning" type="number" min="0" max="120" value="5" required /></label>
+        </div>
+        <label>Тип<select id="activityType"><option value="field">Nix Field Event</option><option value="dungeon">Данж</option><option value="boss">Босс</option><option value="custom">Другое</option></select></label>
+        <div class="modal-actions">
+          <button type="button" class="secondary-button delete-button" id="deleteActivityButton">Удалить</button>
+          <span class="modal-spacer"></span>
+          <button type="button" class="secondary-button" data-close="activityDialog">Отмена</button>
+          <button type="submit" class="primary-button">Сохранить</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="eventDialog" class="modal">
+      <form method="dialog" id="eventForm">
+        <div class="modal-head">
+          <div><span class="section-kicker">КАЛЕНДАРЬ</span><h3 id="eventModalTitle">Новое событие</h3></div>
+          <button type="button" class="close-button" data-close="eventDialog">×</button>
+        </div>
+        <input type="hidden" id="eventId" />
+        <label>Название<input id="eventName" maxlength="50" placeholder="Например, Thuban" required /></label>
+        <div class="form-row">
+          <label>Время<input id="eventTime" type="time" required /></label>
+          <label>Тип<select id="eventType"><option value="peace">Мирный босс</option><option value="war">PvP-событие</option><option value="archboss">Архбосс</option><option value="dynamic">Dynamic Event</option><option value="custom">Другое</option></select></label>
+        </div>
+        <label>Дни проведения<select id="eventDays"><option value="daily">Каждый день</option><option value="weekdays">Пн–Пт</option><option value="weekends">Сб–Вс</option><option value="wed_sat">Среда и суббота</option></select></label>
+        <label class="check-label"><input id="eventNotify" type="checkbox" checked /> Уведомить за 10 минут</label>
+        <div class="modal-actions">
+          <button type="button" class="secondary-button delete-button" id="deleteEventButton">Удалить</button>
+          <span class="modal-spacer"></span>
+          <button type="button" class="secondary-button" data-close="eventDialog">Отмена</button>
+          <button type="submit" class="primary-button">Сохранить</button>
+        </div>
+      </form>
+    </dialog>
+
+    <script src="app.js"></script>
+  </body>
+</html>
