@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, Notification } = require('electron');
+const { app, BrowserWindow, ipcMain, Notification, net } = require('electron');
 const path = require('path');
 
 let mainWindow;
@@ -54,4 +54,18 @@ ipcMain.handle('notify', (_event, { title, body }) => {
   if (!Notification.isSupported()) return false;
   new Notification({ title, body, silent: false }).show();
   return true;
+});
+
+ipcMain.handle('schedule:fetch-amazon', async () => {
+  try {
+    const response = await net.fetch('https://thronewatch.app/schedule.json');
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const text = await response.text();
+    if (text.length > 1_000_000) throw new Error('Schedule response is too large');
+    const data = JSON.parse(text);
+    if (!data?.rotationSchedule?.tiers?.t4?.days) throw new Error('Invalid T4 schedule');
+    return { ok: true, data, syncedAt: Date.now() };
+  } catch (error) {
+    return { ok: false, error: error.message };
+  }
 });

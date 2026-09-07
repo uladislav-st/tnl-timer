@@ -9,9 +9,10 @@ const upcoming = schedule.getUpcomingEvents(referenceTime, 8);
 
 assert.equal(schedule.meta.edition, 'Amazon / Steam');
 assert.equal(schedule.meta.region, 'EU');
-assert.equal(upcoming[0].name, 'T3 Minezerok / T2 Manticus');
+assert.equal(upcoming[0].name, 'Ascended Pakilo Naru / Ascended Nirma');
 assert.equal(new Date(upcoming[0].time).toISOString(), '2026-09-07T11:00:00.000Z');
-assert.ok(upcoming.some((event) => event.type === 'dynamic'));
+assert.ok(upcoming.some((event) => event.type === 'gigantrite'));
+assert.ok(upcoming.some((event) => event.type === 'war'));
 
 const world = schedule.getWorldStatus(referenceTime.getTime());
 assert.equal(typeof world.dayNight.isDay, 'boolean');

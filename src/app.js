@@ -1,8 +1,10 @@
 const STORAGE_KEY = 'nix-tracker-state-v1';
+const SCHEDULE_CACHE_KEY = 'nix-tracker-amazon-schedule-v1';
 
 const typeLabels = {
   field: 'Nix Field Event', dungeon: 'Данж', boss: 'Босс', custom: 'Другое',
-  peace: 'Мирный босс', war: 'PvP', archboss: 'Архбосс', dynamic: 'Dynamic Event'
+  peace: 'Мирный босс', war: 'PvP', archboss: 'Архбосс', dynamic: 'Dynamic Event',
+  gigantrite: 'Gigantrite'
 };
 
 const typeIcons = { field: '❄', dungeon: '◇', boss: '♜', custom: '✦' };
@@ -147,7 +149,9 @@ function renderEvents() {
     const minutes = Math.floor((diff % 3600000) / 60000);
     const when = eventDate.toDateString() === now.toDateString() ? 'сегодня' : eventDate.toLocaleDateString('ru-RU', { weekday: 'short' });
     const displayTime = event.source === 'amazon' ? formatTime(event.timestamp) : event.time;
-    const sourceLabel = event.source === 'amazon' ? '<span class="auto-badge">AUTO</span>' : '';
+    const sourceLabel = event.source === 'amazon'
+      ? `<span class="auto-badge">${event.estimated ? 'ПРОГНОЗ' : 'AUTO'}</span>`
+      : '';
     const editButton = event.source === 'manual' ? '<button class="menu-button" data-action="edit-event">•••</button>' : '';
     return `
       <div class="event-row" data-id="${event.id}">
@@ -169,7 +173,27 @@ function renderWorldStatus() {
   setStatus('#dayNightStatus', `${status.dayNight.isDay ? 'День' : 'Ночь'} · смена через ${formatShortDuration(status.dayNight.remaining)}`);
   setStatus('#laslanRainStatus', status.laslan.raining ? `Идёт дождь · ещё ${formatShortDuration(status.laslan.remaining)}` : `Через ${formatShortDuration(status.laslan.remaining)}`);
   setStatus('#talandreRainStatus', status.talandre.raining ? `Идёт дождь · ещё ${formatShortDuration(status.talandre.remaining)}` : `Через ${formatShortDuration(status.talandre.remaining)}`);
-  $('#scheduleFreshness').textContent = `проверено ${window.amazonSchedule.meta.verifiedAt.split('-').reverse().join('.')}`;
+  const verified = window.amazonSchedule.meta.verifiedAt.split('-').reverse().join('.');
+  $('#scheduleFreshness').textContent = `${window.amazonSchedule.meta.provider} · ${verified}`;
+}
+
+async function syncAmazonSchedule() {
+  if (!window.amazonSchedule) return;
+  try {
+    const cached = JSON.parse(localStorage.getItem(SCHEDULE_CACHE_KEY));
+    if (cached?.data) window.amazonSchedule.updateSchedule(cached.data, cached.syncedAt);
+  } catch { /* Use the bundled T4 fallback. */ }
+
+  renderEvents();
+  renderWorldStatus();
+  if (!window.nixDesktop?.fetchAmazonSchedule) return;
+
+  const result = await window.nixDesktop.fetchAmazonSchedule();
+  if (result?.ok && window.amazonSchedule.updateSchedule(result.data, result.syncedAt)) {
+    localStorage.setItem(SCHEDULE_CACHE_KEY, JSON.stringify({ data: result.data, syncedAt: result.syncedAt }));
+    renderEvents();
+    renderWorldStatus();
+  }
 }
 
 function renderHistory() {
@@ -226,7 +250,7 @@ function checkNotifications() {
 
   if (window.amazonSchedule) {
     const nextAutomatic = window.amazonSchedule.getUpcomingEvents(new Date(), 8)
-      .filter((event) => event.type === 'boss' || event.type === 'archboss');
+      .filter((event) => event.type === 'boss' || event.type === 'archboss' || event.type === 'war');
     for (const event of nextAutomatic) {
       const remaining = event.time - now;
       const key = `auto-event:${event.id}`;
@@ -381,6 +405,7 @@ if (window.nixDesktop) {
 }
 
 renderAll();
+syncAmazonSchedule();
 updateClock();
 checkNotifications();
 setInterval(() => { updateClock(); renderActivities(); renderWorldStatus(); checkNotifications(); }, 1000);
